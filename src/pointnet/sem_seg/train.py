@@ -3,48 +3,46 @@ import socket
 import pydevd
 import sys
 from pointnet import provider
-from .model import *
+from pointnet.sem_seg.model import *
 
 class Trainer:
-    def __init__(self, FLAGS):
+    def __init__(self, gpu=0, log_dir='log', num_point=4096, max_epoch=50, batch_size=24,
+                 learning_rate=0.001, momentum=0.9, optimizer='adam',
+                 decay_step=300000, decay_rate=0.5, test_area=6):
         provider.initialize_provider_data()
 
-        self.BATCH_SIZE = FLAGS.batch_size
-        self.NUM_POINT = FLAGS.num_point
-        self.MAX_EPOCH = FLAGS.max_epoch
-        self.NUM_POINT = FLAGS.num_point
-        self.BASE_LEARNING_RATE = FLAGS.learning_rate
-        self.GPU_INDEX = FLAGS.gpu
-        self.MOMENTUM = FLAGS.momentum
-        self.OPTIMIZER = FLAGS.optimizer
-        self.DECAY_STEP = FLAGS.decay_step
-        self.DECAY_RATE = FLAGS.decay_rate
+        self._batch_size = batch_size
+        self._num_point = num_point
+        self._max_epoch = max_epoch
+        self._base_learning_rate = learning_rate
+        self._gpu_index = gpu
+        self._momentum = momentum
+        self._optimizer = optimizer
+        self._decay_step = decay_step
+        self._decay_rate = decay_rate
 
-        self.LOG_DIR = FLAGS.log_dir
-        if not os.path.exists(self.LOG_DIR):
-            os.mkdir(self.LOG_DIR)
-        os.system('cp model.py %s' % (self.LOG_DIR)) # bkp of model def
-        os.system('cp train.py %s' % (self.LOG_DIR)) # bkp of train procedure
-        self.LOG_FOUT = open(os.path.join(self.LOG_DIR, 'log_train.txt'), 'w')
-        self.LOG_FOUT.write(str(FLAGS)+'\n')
+        self._log_dir = log_dir
+        if not os.path.exists(self._log_dir):
+            os.mkdir(self._log_dir)
+        os.system('cp model.py %s' % (self._log_dir)) # bkp of model def
+        os.system('cp train.py %s' % (self._log_dir)) # bkp of train procedure
+        self._log_fout = open(os.path.join(self._log_dir, 'log_train.txt'), 'w')
 
-        self.MAX_NUM_POINT = 4096
-        self.NUM_CLASSES = 13
-        self.BN_INIT_DECAY = 0.5
-        self.BN_DECAY_DECAY_RATE = 0.5
-        #self.BN_DECAY_DECAY_STEP = float(DECAY_STEP * 2)
-        self.BN_DECAY_DECAY_STEP = float(self.DECAY_STEP)
-        self.BN_DECAY_CLIP = 0.99
+        self._max_num_point = 4096
+        self._num_classes = 13
+        self._bn_init_decay = 0.5
+        self._bn_decay_decay_rate = 0.5
+        #self._bn_decay_decay_step = float(_decay_step * 2)
+        self._bn_decay_decay_step = float(self._decay_step)
+        self._bn_decay_clip = 0.99
 
-        self.HOSTNAME = socket.gethostname()
-
-        ALL_FILES = provider.getDataFiles('indoor3d_sem_seg_hdf5_data/all_files.txt')
+        all_files = provider.getDataFiles('indoor3d_sem_seg_hdf5_data/all_files.txt')
         room_filelist = [line.rstrip() for line in open('indoor3d_sem_seg_hdf5_data/room_filelist.txt')]
 
         # Load ALL data
         data_batch_list = []
         label_batch_list = []
-        for h5_filename in ALL_FILES:
+        for h5_filename in all_files:
             data_batch, label_batch = provider.loadDataFile(h5_filename)
             data_batch_list.append(data_batch)
             label_batch_list.append(label_batch)
@@ -53,7 +51,7 @@ class Trainer:
         print(data_batches.shape)
         print(label_batches.shape)
 
-        test_area = 'Area_'+str(FLAGS.test_area)
+        test_area = 'Area_'+str(test_area)
         train_idxs = []
         test_idxs = []
         for i,room_name in enumerate(room_filelist):
@@ -72,35 +70,35 @@ class Trainer:
 
 
     def log_string(self, out_str):
-        self.LOG_FOUT.write(out_str+'\n')
-        self.LOG_FOUT.flush()
+        self._log_fout.write(out_str + '\n')
+        self._log_fout.flush()
         print(out_str)
 
 
     def get_learning_rate(self, batch):
         learning_rate = tf.train.exponential_decay(
-                            self.BASE_LEARNING_RATE,  # Base learning rate.
-                            batch * self.BATCH_SIZE,  # Current index into the dataset.
-                            self.DECAY_STEP,          # Decay step.
-                            self.DECAY_RATE,          # Decay rate.
+                            self._base_learning_rate,  # Base learning rate.
+                            batch * self._batch_size,  # Current index into the dataset.
+                            self._decay_step,          # Decay step.
+                            self._decay_rate,          # Decay rate.
                             staircase=True)
         learning_rate = tf.maximum(learning_rate, 0.00001) # CLIP THE LEARNING RATE!!
         return learning_rate
 
     def get_bn_decay(self, batch):
         bn_momentum = tf.train.exponential_decay(
-                          self.BN_INIT_DECAY,
-                          batch*self.BATCH_SIZE,
-                          self.BN_DECAY_DECAY_STEP,
-                          self.BN_DECAY_DECAY_RATE,
+                          self._bn_init_decay,
+                          batch*self._batch_size,
+                          self._bn_decay_decay_step,
+                          self._bn_decay_decay_rate,
                           staircase=True)
-        bn_decay = tf.minimum(self.BN_DECAY_CLIP, 1 - bn_momentum)
+        bn_decay = tf.minimum(self._bn_decay_clip, 1 - bn_momentum)
         return bn_decay
 
     def train(self):
         with tf.Graph().as_default():
-            with tf.device('/gpu:'+str(self.GPU_INDEX)):
-                pointclouds_pl, labels_pl = placeholder_inputs(self.BATCH_SIZE, self.NUM_POINT)
+            with tf.device('/gpu:'+str(self._gpu_index)):
+                pointclouds_pl, labels_pl = placeholder_inputs(self._batch_size, self._num_point)
                 is_training_pl = tf.placeholder(tf.bool, shape=())
 
                 # Note the global_step=batch parameter to minimize.
@@ -115,15 +113,15 @@ class Trainer:
                 tf.summary.scalar('loss', loss)
 
                 correct = tf.equal(tf.argmax(pred, 2), tf.to_int64(labels_pl))
-                accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(self.BATCH_SIZE*self.NUM_POINT)
+                accuracy = tf.reduce_sum(tf.cast(correct, tf.float32)) / float(self._batch_size * self._num_point)
                 tf.summary.scalar('accuracy', accuracy)
 
                 # Get training operator
                 learning_rate = self.get_learning_rate(batch)
                 tf.summary.scalar('learning_rate', learning_rate)
-                if self.OPTIMIZER == 'momentum':
-                    optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=self.MOMENTUM)
-                elif self.OPTIMIZER == 'adam':
+                if self._optimizer == 'momentum':
+                    optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=self._momentum)
+                elif self._optimizer == 'adam':
                     optimizer = tf.train.AdamOptimizer(learning_rate)
                 train_op = optimizer.minimize(loss, global_step=batch)
 
@@ -139,9 +137,9 @@ class Trainer:
 
             # Add summary writers
             merged = tf.summary.merge_all()
-            train_writer = tf.summary.FileWriter(os.path.join(self.LOG_DIR, 'train'),
-                                      sess.graph)
-            test_writer = tf.summary.FileWriter(os.path.join(self.LOG_DIR, 'test'))
+            train_writer = tf.summary.FileWriter(os.path.join(self._log_dir, 'train'),
+                                                 sess.graph)
+            test_writer = tf.summary.FileWriter(os.path.join(self._log_dir, 'test'))
 
             # Init variables
             init = tf.global_variables_initializer()
@@ -156,7 +154,7 @@ class Trainer:
                    'merged': merged,
                    'step': batch}
 
-            for epoch in range(self.MAX_EPOCH):
+            for epoch in range(self._max_epoch):
                 self.log_string('**** EPOCH %03d ****' % (epoch))
                 sys.stdout.flush()
 
@@ -165,7 +163,7 @@ class Trainer:
 
                 # Save the variables to disk.
                 if epoch % 10 == 0:
-                    save_path = saver.save(sess, os.path.join(self.LOG_DIR, "model.ckpt"))
+                    save_path = saver.save(sess, os.path.join(self._log_dir, "model.ckpt"))
                     self.log_string("Model saved in file: %s" % save_path)
 
 
@@ -175,11 +173,11 @@ class Trainer:
         is_training = True
 
         self.log_string('----')
-        current_data, current_label, _ = provider.shuffle_data(self.train_data[:, 0:self.NUM_POINT, :],
+        current_data, current_label, _ = provider.shuffle_data(self.train_data[:, 0:self._num_point, :],
                                                                self.train_label)
 
         file_size = current_data.shape[0]
-        num_batches = file_size // self.BATCH_SIZE
+        num_batches = file_size // self._batch_size
 
         total_correct = 0
         total_seen = 0
@@ -188,8 +186,8 @@ class Trainer:
         for batch_idx in range(num_batches):
             if batch_idx % 100 == 0:
                 print('Current batch/total batch num: %d/%d'%(batch_idx,num_batches))
-            start_idx = batch_idx * self.BATCH_SIZE
-            end_idx = (batch_idx+1) * self.BATCH_SIZE
+            start_idx = batch_idx * self._batch_size
+            end_idx = (batch_idx+1) * self._batch_size
 
             feed_dict = {ops['pointclouds_pl']: current_data[start_idx:end_idx, :, :],
                          ops['labels_pl']: current_label[start_idx:end_idx],
@@ -200,7 +198,7 @@ class Trainer:
             pred_val = np.argmax(pred_val, 2)
             correct = np.sum(pred_val == current_label[start_idx:end_idx])
             total_correct += correct
-            total_seen += (self.BATCH_SIZE * self.NUM_POINT)
+            total_seen += (self._batch_size * self._num_point)
             loss_sum += loss_val
 
         self.log_string('mean loss: %f' % (loss_sum / float(num_batches)))
@@ -213,19 +211,19 @@ class Trainer:
         total_correct = 0
         total_seen = 0
         loss_sum = 0
-        total_seen_class = [0 for _ in range(self.NUM_CLASSES)]
-        total_correct_class = [0 for _ in range(self.NUM_CLASSES)]
+        total_seen_class = [0 for _ in range(self._num_classes)]
+        total_correct_class = [0 for _ in range(self._num_classes)]
 
         self.log_string('----')
-        current_data = self.test_data[:, 0:self.NUM_POINT, :]
+        current_data = self.test_data[:, 0:self._num_point, :]
         current_label = np.squeeze(self.test_label)
 
         file_size = current_data.shape[0]
-        num_batches = file_size // self.BATCH_SIZE
+        num_batches = file_size // self._batch_size
 
         for batch_idx in range(num_batches):
-            start_idx = batch_idx * self.BATCH_SIZE
-            end_idx = (batch_idx+1) * self.BATCH_SIZE
+            start_idx = batch_idx * self._batch_size
+            end_idx = (batch_idx+1) * self._batch_size
 
             feed_dict = {ops['pointclouds_pl']: current_data[start_idx:end_idx, :, :],
                          ops['labels_pl']: current_label[start_idx:end_idx],
@@ -236,19 +234,20 @@ class Trainer:
             pred_val = np.argmax(pred_val, 2)
             correct = np.sum(pred_val == current_label[start_idx:end_idx])
             total_correct += correct
-            total_seen += (self.BATCH_SIZE * self.NUM_POINT)
-            loss_sum += (loss_val * self.BATCH_SIZE)
+            total_seen += (self._batch_size * self._num_point)
+            loss_sum += (loss_val * self._batch_size)
             for i in range(start_idx, end_idx):
-                for j in range(self.NUM_POINT):
+                for j in range(self._num_point):
                     l = current_label[i, j]
                     total_seen_class[l] += 1
                     total_correct_class[l] += (pred_val[i-start_idx, j] == l)
 
-        self.log_string('eval mean loss: %f' % (loss_sum / float(total_seen / self.NUM_POINT)))
+        self.log_string('eval mean loss: %f' % (loss_sum / float(total_seen / self._num_point)))
         self.log_string('eval accuracy: %f' % (total_correct / float(total_seen)))
         self.log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class) / np.array(total_seen_class, dtype=np.float))))
+
     def close(self):
-        self.LOG_FOUT.close()
+        self._log_fout.close()
 
 
 def main():
@@ -267,7 +266,7 @@ def main():
     parser.add_argument('--test_area', type=int, default=6, help='Which area to use for test, option: 1-6 [default: 6]')
     FLAGS = parser.parse_args()
 
-    trainer = Trainer(FLAGS)
+    trainer = Trainer(**FLAGS.__dict__)
 
     trainer.train()
     trainer.close()
