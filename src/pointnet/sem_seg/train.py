@@ -1,18 +1,19 @@
 import argparse
-import socket
 import sys
-
+import os
 import re
+import numpy as np
+
+import tensorflow as tf
 
 from pointnet import provider
-from pointnet.sem_seg.model import *
+from pointnet.sem_seg.model import get_model, get_loss, placeholder_inputs
 
 class Trainer:
     def __init__(self, gpu=0, log_dir='log', num_point=4096, max_epoch=50, batch_size=24,
                  learning_rate=0.001, momentum=0.9, optimizer='adam',
                  decay_step=300000, decay_rate=0.5, test_area=6,
                  data_path='indoor3d_sem_seg_hdf5_data'):
-        #provider.initialize_provider_data()
 
         self._batch_size = batch_size
         self._num_point = num_point
@@ -27,8 +28,7 @@ class Trainer:
         self._log_dir = log_dir
         if not os.path.exists(self._log_dir):
             os.mkdir(self._log_dir)
-        #os.system('cp model.py %s' % (self._log_dir)) # bkp of model def
-        #os.system('cp train.py %s' % (self._log_dir)) # bkp of train procedure
+
         self._log_fout = open(os.path.join(self._log_dir, 'log_train.txt'), 'w')
 
         self._max_num_point = 4096
@@ -54,10 +54,8 @@ class Trainer:
             label_batch_list.append(label_batch)
         data_batches = np.concatenate(data_batch_list, 0)
         label_batches = np.concatenate(label_batch_list, 0)
-        print(data_batches.shape)
-        print(label_batches.shape)
 
-        test_area = 'Area_'+str(test_area)
+        test_area = f'Area_{test_area}'
         train_idxs = []
         test_idxs = []
         for i,room_name in enumerate(room_filelist):
@@ -70,8 +68,6 @@ class Trainer:
         self.train_label = label_batches[train_idxs]
         self.test_data = data_batches[test_idxs,...]
         self.test_label = label_batches[test_idxs]
-        print(self.train_data.shape, self.train_label.shape)
-        print(self.test_data.shape, self.test_label.shape)
 
 
     def log_string(self, out_str):

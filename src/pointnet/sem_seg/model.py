@@ -1,8 +1,6 @@
 import tensorflow as tf
 import time
 import numpy as np
-import os
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 from pointnet.utils import tf_util
 
