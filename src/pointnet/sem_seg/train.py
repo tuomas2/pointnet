@@ -5,11 +5,9 @@ import sys
 from pointnet import provider
 from .model import *
 
-
 class Trainer:
     def __init__(self, FLAGS):
-        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-        ROOT_DIR = os.path.dirname(BASE_DIR)
+        provider.initialize_provider_data()
 
         self.BATCH_SIZE = FLAGS.batch_size
         self.NUM_POINT = FLAGS.num_point

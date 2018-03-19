@@ -8,6 +8,7 @@ import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 from . import provider
+provider.initialize_provider_data()
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
@@ -248,7 +249,7 @@ def eval_one_epoch(sess, ops, test_writer):
     log_string('eval mean loss: %f' % (loss_sum / float(total_seen)))
     log_string('eval accuracy: %f'% (total_correct / float(total_seen)))
     log_string('eval avg class acc: %f' % (np.mean(np.array(total_correct_class)/np.array(total_seen_class,dtype=np.float))))
-         
+
 
 
 if __name__ == "__main__":

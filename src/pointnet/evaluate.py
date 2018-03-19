@@ -8,6 +8,7 @@ import scipy.misc
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 from pointnet import provider
+provider.initialize_provider_data()
 from .utils import pc_util
 
 

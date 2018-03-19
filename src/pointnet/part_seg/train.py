@@ -6,6 +6,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 from pointnet import provider
+provider.initialize_provider_data()
 from . import pointnet_part_seg as model
 
 # DEFAULT SETTINGS
