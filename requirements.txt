@@ -4,19 +4,23 @@
 #
 #    pip-compile --output-file requirements.txt requirements.in
 #
-absl-py==0.1.11           # via tensorflow
-astor==0.6.2              # via tensorflow
+absl-py==0.1.11           # via tensorflow-gpu
+astor==0.6.2              # via tensorflow-gpu
+backports.weakref==1.0.post1  # via tensorflow-gpu
 bleach==1.5.0             # via tensorboard
-gast==0.2.0               # via tensorflow
-grpcio==1.10.0            # via tensorflow
+enum34==1.1.6             # via tensorflow-gpu
+gast==0.2.0               # via tensorflow-gpu
+grpcio==1.10.0            # via tensorflow-gpu
 h5py==2.7.1
 html5lib==0.9999999       # via bleach, tensorboard
 markdown==2.6.11          # via tensorboard
-numpy==1.14.2
-protobuf==3.5.2.post1     # via grpcio, tensorboard, tensorflow
-six==1.11.0               # via absl-py, bleach, grpcio, h5py, html5lib, protobuf, tensorboard, tensorflow
-tensorboard==1.6.0        # via tensorflow
-tensorflow==1.6.0
-termcolor==1.1.0          # via tensorflow
+mock==2.0.0               # via tensorflow-gpu
+numpy==1.14.2             # via h5py, tensorboard, tensorflow-gpu
+pbr==3.1.1                # via mock
+protobuf==3.5.2.post1     # via grpcio, tensorboard, tensorflow-gpu
+six==1.11.0               # via absl-py, bleach, grpcio, h5py, html5lib, mock, protobuf, tensorboard, tensorflow-gpu
+tensorboard==1.6.0        # via tensorflow-gpu
+tensorflow-gpu==1.6.0
+termcolor==1.1.0          # via tensorflow-gpu
 werkzeug==0.14.1          # via tensorboard
-wheel==0.30.0             # via tensorboard, tensorflow
+wheel==0.30.0             # via tensorboard, tensorflow-gpu
