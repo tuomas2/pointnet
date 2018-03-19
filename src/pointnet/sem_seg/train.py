@@ -1,6 +1,6 @@
 import argparse
 import socket
-
+import pydevd
 import sys
 from pointnet import provider
 from .model import *
@@ -252,6 +252,7 @@ class Trainer:
 
 
 def main():
+    pydevd.settrace('localhost', port=12151, stdoutToServer=True, stderrToServer=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
     parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
