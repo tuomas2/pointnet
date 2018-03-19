@@ -272,6 +272,7 @@ def main():
     parser.add_argument('--decay_step', type=int, default=300000, help='Decay step for lr decay [default: 300000]')
     parser.add_argument('--decay_rate', type=float, default=0.5, help='Decay rate for lr decay [default: 0.5]')
     parser.add_argument('--test_area', type=int, default=6, help='Which area to use for test, option: 1-6 [default: 6]')
+    parser.add_argument('--data_path', type=str, default='indoor3d_sem_seg_hdf5_data', help='Data path where .h5 files are found')
     FLAGS = parser.parse_args()
 
     trainer = Trainer(**FLAGS.__dict__)
