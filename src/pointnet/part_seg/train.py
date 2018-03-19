@@ -3,12 +3,10 @@ import tensorflow as tf
 import numpy as np
 import json
 import os
-import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
-sys.path.append(os.path.dirname(BASE_DIR))
+
 from pointnet import provider
-import pointnet_part_seg as model
+from . import pointnet_part_seg as model
 
 # DEFAULT SETTINGS
 parser = argparse.ArgumentParser()

@@ -1,11 +1,6 @@
 import argparse
-import os
-import sys
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(BASE_DIR)
-sys.path.append(BASE_DIR)
-from model import *
-import indoor3d_util
+from .model import *
+from . import indoor3d_util
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')

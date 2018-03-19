@@ -3,11 +3,8 @@ import tensorflow as tf
 import json
 import numpy as np
 import os
-import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
-sys.path.append(os.path.dirname(BASE_DIR))
-import pointnet_part_seg as model
+from . import pointnet_part_seg as model
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', default='train_results/trained_models/epoch_190.ckpt', help='Model checkpoint path')

@@ -1,8 +1,6 @@
 import os
-import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
-from plyfile import (PlyData, PlyElement, make2d, PlyParseError, PlyProperty)
+from .plyfile import (PlyData, PlyElement, make2d, PlyParseError, PlyProperty)
 import numpy as np
 import h5py
 

@@ -5,13 +5,10 @@ import socket
 import importlib
 import os
 import scipy.misc
-import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.append(BASE_DIR)
-sys.path.append(os.path.join(BASE_DIR, 'models'))
-sys.path.append(os.path.join(BASE_DIR, 'utils'))
+
 from pointnet import provider
-import pc_util
+from .utils import pc_util
 
 
 parser = argparse.ArgumentParser()

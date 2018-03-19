@@ -21,7 +21,6 @@ from itertools import islice as _islice
 import numpy as _np
 from sys import byteorder as _byteorder
 
-
 try:
     _range = xrange
 except NameError:

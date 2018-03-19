@@ -1,12 +1,9 @@
 import os
 import numpy as np
-import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
-sys.path.append(BASE_DIR)
-sys.path.append(os.path.join(ROOT_DIR, 'utils'))
-import data_prep_util
-import indoor3d_util
+from pointnet.utils import data_prep_util
+from . import indoor3d_util
 
 # Constants
 data_dir = os.path.join(ROOT_DIR, 'data')
