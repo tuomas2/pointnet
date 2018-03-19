@@ -13,7 +13,7 @@ setup(
     description='',
     entry_points = {
         'console_scripts': [
-            'sem_seg = pointnet.sem_seg:main',
+            'sem_seg_train = pointnet.sem_seg.train:main',
         ]
     },
 )
