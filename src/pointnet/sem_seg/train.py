@@ -42,14 +42,13 @@ class Trainer:
         all_files = sorted([os.path.join(data_path, i) for i in os.listdir(data_path)
                             if re.match(r'ply_data_all_(\d+).h5', i)])
 
-        #all_files = provider.getDataFiles(os.path.join(data_path, 'all_files.txt'))
         room_filelist = [line.rstrip() for line in open(os.path.join(data_path, 'room_filelist.txt'))]
 
         # Load ALL data
         data_batch_list = []
         label_batch_list = []
         for h5_filename in all_files:
-            data_batch, label_batch = provider.loadDataFile(h5_filename)
+            data_batch, label_batch = provider.load_h5(h5_filename)
             data_batch_list.append(data_batch)
             label_batch_list.append(label_batch)
         data_batches = np.concatenate(data_batch_list, 0)
