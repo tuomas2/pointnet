@@ -9,7 +9,7 @@ class Trainer:
     def __init__(self, gpu=0, log_dir='log', num_point=4096, max_epoch=50, batch_size=24,
                  learning_rate=0.001, momentum=0.9, optimizer='adam',
                  decay_step=300000, decay_rate=0.5, test_area=6,
-                 indoor_data_path='indoor3d_sem_seg_hdf5_data'):
+                 data_path='indoor3d_sem_seg_hdf5_data'):
         #provider.initialize_provider_data()
 
         self._batch_size = batch_size
@@ -37,8 +37,8 @@ class Trainer:
         self._bn_decay_decay_step = float(self._decay_step)
         self._bn_decay_clip = 0.99
 
-        all_files = provider.getDataFiles(os.path.join(indoor_data_path, 'all_files.txt'))
-        room_filelist = [line.rstrip() for line in open(os.path.join(indoor_data_path, 'room_filelist.txt'))]
+        all_files = provider.getDataFiles(os.path.join(data_path, 'all_files.txt'))
+        room_filelist = [line.rstrip() for line in open(os.path.join(data_path, 'room_filelist.txt'))]
 
         # Load ALL data
         data_batch_list = []
