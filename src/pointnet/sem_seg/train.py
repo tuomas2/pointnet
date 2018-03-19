@@ -1,6 +1,5 @@
 import argparse
 import socket
-import pydevd
 import sys
 
 import re
@@ -73,7 +72,6 @@ class Trainer:
         self.test_label = label_batches[test_idxs]
         print(self.train_data.shape, self.train_label.shape)
         print(self.test_data.shape, self.test_label.shape)
-
 
 
     def log_string(self, out_str):
@@ -256,9 +254,12 @@ class Trainer:
     def close(self):
         self._log_fout.close()
 
+def start_debug():
+    import pydevd
+    pydevd.settrace('localhost', port=12151, stdoutToServer=True, stderrToServer=True)
+
 
 def main():
-    pydevd.settrace('localhost', port=12151, stdoutToServer=True, stderrToServer=True)
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=int, default=0, help='GPU to use [default: GPU 0]')
     parser.add_argument('--log_dir', default='log', help='Log dir [default: log]')
