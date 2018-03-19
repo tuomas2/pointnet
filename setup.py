@@ -10,5 +10,10 @@ setup(
     license='MIT',
     author='Tuomas Airaksinen',
     author_email='tuomas.airaksinen@vrt.fi',
-    description=''
+    description='',
+    entry_points = {
+        'console_scripts': [
+            'sem_seg = pointnet.sem_seg:main',
+        ]
+    },
 )
