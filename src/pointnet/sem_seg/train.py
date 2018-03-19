@@ -2,6 +2,9 @@ import argparse
 import socket
 import pydevd
 import sys
+
+import re
+
 from pointnet import provider
 from pointnet.sem_seg.model import *
 
@@ -25,8 +28,8 @@ class Trainer:
         self._log_dir = log_dir
         if not os.path.exists(self._log_dir):
             os.mkdir(self._log_dir)
-        os.system('cp model.py %s' % (self._log_dir)) # bkp of model def
-        os.system('cp train.py %s' % (self._log_dir)) # bkp of train procedure
+        #os.system('cp model.py %s' % (self._log_dir)) # bkp of model def
+        #os.system('cp train.py %s' % (self._log_dir)) # bkp of train procedure
         self._log_fout = open(os.path.join(self._log_dir, 'log_train.txt'), 'w')
 
         self._max_num_point = 4096
@@ -37,7 +40,10 @@ class Trainer:
         self._bn_decay_decay_step = float(self._decay_step)
         self._bn_decay_clip = 0.99
 
-        all_files = provider.getDataFiles(os.path.join(data_path, 'all_files.txt'))
+        all_files = sorted([os.path.join(data_path, i) for i in os.listdir(data_path)
+                            if re.match(r'ply_data_all_(\d+).h5', i)])
+
+        #all_files = provider.getDataFiles(os.path.join(data_path, 'all_files.txt'))
         room_filelist = [line.rstrip() for line in open(os.path.join(data_path, 'room_filelist.txt'))]
 
         # Load ALL data
