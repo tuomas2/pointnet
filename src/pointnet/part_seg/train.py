@@ -1,15 +1,13 @@
 import argparse
-import subprocess
 import tensorflow as tf
 import numpy as np
-from datetime import datetime
 import json
 import os
 import sys
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.dirname(BASE_DIR))
-import provider
+from pointnet import provider
 import pointnet_part_seg as model
 
 # DEFAULT SETTINGS

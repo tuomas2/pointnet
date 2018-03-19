@@ -3,7 +3,6 @@ import numpy as np
 import argparse
 import socket
 import importlib
-import time
 import os
 import scipy.misc
 import sys
@@ -11,7 +10,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
 sys.path.append(os.path.join(BASE_DIR, 'models'))
 sys.path.append(os.path.join(BASE_DIR, 'utils'))
-import provider
+from pointnet import provider
 import pc_util
 
 
@@ -118,7 +117,7 @@ def eval_one_epoch(sess, ops, num_votes=1, topk=1):
             batch_pred_classes = np.zeros((cur_batch_size, NUM_CLASSES)) # 0/1 for classes
             for vote_idx in range(num_votes):
                 rotated_data = provider.rotate_point_cloud_by_angle(current_data[start_idx:end_idx, :, :],
-                                                  vote_idx/float(num_votes) * np.pi * 2)
+                                                                    vote_idx / float(num_votes) * np.pi * 2)
                 feed_dict = {ops['pointclouds_pl']: rotated_data,
                              ops['labels_pl']: current_label[start_idx:end_idx],
                              ops['is_training_pl']: is_training}

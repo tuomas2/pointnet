@@ -1,6 +1,4 @@
 import argparse
-import math
-import h5py
 import numpy as np
 import tensorflow as tf
 import socket
@@ -12,8 +10,7 @@ ROOT_DIR = os.path.dirname(BASE_DIR)
 sys.path.append(BASE_DIR)
 sys.path.append(ROOT_DIR)
 sys.path.append(os.path.join(ROOT_DIR, 'utils'))
-import provider
-import tf_util
+from pointnet import provider
 from model import *
 
 parser = argparse.ArgumentParser()
@@ -198,7 +195,7 @@ def train_one_epoch(sess, ops, train_writer):
     is_training = True
     
     log_string('----')
-    current_data, current_label, _ = provider.shuffle_data(train_data[:,0:NUM_POINT,:], train_label) 
+    current_data, current_label, _ = provider.shuffle_data(train_data[:, 0:NUM_POINT, :], train_label)
     
     file_size = current_data.shape[0]
     num_batches = file_size // BATCH_SIZE
