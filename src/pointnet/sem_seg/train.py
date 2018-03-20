@@ -15,7 +15,7 @@ class Trainer:
     def __init__(self, gpu=0, log_dir='log', num_point=4096, max_epoch=50, batch_size=24,
                  learning_rate=0.001, momentum=0.9, optimizer='adam',
                  decay_step=300000, decay_rate=0.5, test_area=6,
-                 data_path='indoor3d_sem_seg_hdf5_data'):
+                 data_path='indoor3d_sem_seg_hdf5_data', **kwargs):
 
         self._batch_size = batch_size
         self._num_point = num_point
@@ -290,7 +290,7 @@ def main():
     parser.add_argument('--decay_rate', type=float, default=0.5, help='Decay rate for lr decay [default: 0.5]')
     parser.add_argument('--test_area', type=int, default=6, help='Which area to use for test, option: 1-6 [default: 6]')
     parser.add_argument('--data_path', type=str, default='indoor3d_sem_seg_hdf5_data', help='Data path where .h5 files are found')
-    parser.add_argument('--debug', type=bool, default=False, help='Enable remote debugging')
+    parser.add_argument('--debug', type=bool, default=False, action='store_true', help='Enable remote debugging')
     flags = parser.parse_args()
 
     if flags.debug:
