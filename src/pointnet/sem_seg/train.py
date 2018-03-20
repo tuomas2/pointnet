@@ -95,20 +95,20 @@ class Trainer:
         print(out_str)
 
 
-    def get_learning_rate(self, batch):
+    def get_learning_rate(self, step):
         learning_rate = tf.train.exponential_decay(
                             self._base_learning_rate,  # Base learning rate.
-                            batch * self._batch_size,  # Current index into the dataset.
+                            step * self._batch_size,  # Current index into the dataset.
                             self._decay_step,          # Decay step.
                             self._decay_rate,          # Decay rate.
                             staircase=True)
         learning_rate = tf.maximum(learning_rate, 0.00001) # CLIP THE LEARNING RATE!!
         return learning_rate
 
-    def get_bn_decay(self, batch):
+    def get_bn_decay(self, step):
         bn_momentum = tf.train.exponential_decay(
                           self._bn_init_decay,
-                          batch*self._batch_size,
+                          step * self._batch_size,
                           self._bn_decay_decay_step,
                           self._bn_decay_decay_rate,
                           staircase=True)
@@ -121,10 +121,10 @@ class Trainer:
                 pointclouds_pl, labels_pl = placeholder_inputs(self._batch_size, self._num_point)
                 is_training_pl = tf.placeholder(tf.bool, shape=())
 
-                # Note the global_step=batch parameter to minimize.
-                # That tells the optimizer to helpfully increment the 'batch' parameter for you every time it trains.
-                batch = tf.Variable(0)
-                bn_decay = self.get_bn_decay(batch)
+                # Note the global_step=step parameter to optimizer.minimize.
+                # That tells the optimizer to helpfully increment the 'step' parameter for you every time it trains.
+                step = tf.Variable(0)
+                bn_decay = self.get_bn_decay(step)
                 tf.summary.scalar('bn_decay', bn_decay)
 
                 # Get model and loss
@@ -137,7 +137,7 @@ class Trainer:
                 tf.summary.scalar('accuracy', accuracy)
 
                 # Get training operator
-                learning_rate = self.get_learning_rate(batch)
+                learning_rate = self.get_learning_rate(step)
                 tf.summary.scalar('learning_rate', learning_rate)
                 if self._optimizer == 'momentum':
                     optimizer = tf.train.MomentumOptimizer(learning_rate, momentum=self._momentum)
@@ -146,7 +146,7 @@ class Trainer:
                 else:
                     raise RuntimeError(f'Optimizer {self._optimizer} not supported')
 
-                train_op = optimizer.minimize(loss, global_step=batch)
+                train_op = optimizer.minimize(loss, global_step=step)
 
                 # Add ops to save and restore all the variables.
                 saver = tf.train.Saver()
@@ -181,7 +181,7 @@ class Trainer:
                    'loss': loss,
                    'train_op': train_op,
                    'merged': merged,
-                   'step': batch}
+                   'step': step}
 
             for epoch in range(self._max_epoch + 1):
                 self.log_string('**** EPOCH %03d ****' % (epoch))
