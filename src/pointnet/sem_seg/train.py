@@ -129,7 +129,7 @@ class Trainer:
                 elif self._optimizer == 'adam':
                     optimizer = tf.train.AdamOptimizer(learning_rate)
                 else:
-                    raise NotImplementedError(f'Optimizer {self._optimizer} not supported')
+                    raise RuntimeError(f'Optimizer {self._optimizer} not supported')
 
                 train_op = optimizer.minimize(loss, global_step=batch)
 
