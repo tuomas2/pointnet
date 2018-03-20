@@ -31,7 +31,7 @@ class Trainer:
 
         self._log_fout = open(os.path.join(self._log_dir, 'log_train.txt'), 'w')
 
-        self._max_num_point = 4096
+        #self._max_num_point = 4096
         self._num_classes = 13
         self._bn_init_decay = 0.5
         self._bn_decay_decay_rate = 0.5
