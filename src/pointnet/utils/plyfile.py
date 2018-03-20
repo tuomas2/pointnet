@@ -161,8 +161,8 @@ class PlyData(object):
 
     '''
 
-    def __init__(self, elements=[], text=False, byte_order='=',
-                 comments=[], obj_info=[]):
+    def __init__(self, elements=None, text=False, byte_order='=',
+                 comments=None, obj_info=None):
         '''
         elements: sequence of PlyElement instances.
 
@@ -179,6 +179,16 @@ class PlyData(object):
             "obj_info ..." instead of "comment ...".
 
         '''
+
+        if elements is None:
+            elements = []
+
+        if comments is None:
+            comments = []
+
+        if obj_info is None:
+            obj_info = []
+
         if byte_order == '=' and not text:
             byte_order = _native_byte_order
 
@@ -375,7 +385,7 @@ class PlyElement(object):
 
     '''
 
-    def __init__(self, name, properties, count, comments=[]):
+    def __init__(self, name, properties, count, comments=None):
         '''
         This is not part of the public interface.  The preferred methods
         of obtaining PlyElement instances are PlyData.read (to read from
@@ -383,6 +393,8 @@ class PlyElement(object):
         array).
 
         '''
+        if comments is None:
+            comments = []
         self._name = str(name)
         self._check_name()
         self._count = count
@@ -503,8 +515,8 @@ class PlyElement(object):
                 lines[a:])
 
     @staticmethod
-    def describe(data, name, len_types={}, val_types={},
-                 comments=[]):
+    def describe(data, name, len_types=None, val_types=None,
+                 comments=None):
         '''
         Construct a PlyElement from an array's metadata.
 
@@ -514,8 +526,17 @@ class PlyElement(object):
         and value types of list properties.  List property lengths
         always default to type 'u1' (8-bit unsigned integer), and value
         types default to 'i4' (32-bit integer).
-
         '''
+
+        if len_types is None:
+            len_types = {}
+
+        if val_types is None:
+            val_types = {}
+
+        if comments is None:
+            comments = []
+
         if not isinstance(data, _np.ndarray):
             raise TypeError("only numpy arrays are supported")
 
