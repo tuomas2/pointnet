@@ -150,12 +150,14 @@ class Trainer:
                 # Add ops to save and restore all the variables.
                 saver = tf.train.Saver()
 
+
             # Create a session
             config = tf.ConfigProto()
             config.gpu_options.allow_growth = True
             config.allow_soft_placement = True
             config.log_device_placement = True
             sess = tf.Session(config=config)
+            model_filename = os.path.join(self._log_dir, "model.ckpt")
 
             # Add summary writers
             merged = tf.summary.merge_all()
@@ -164,8 +166,12 @@ class Trainer:
             test_writer = tf.summary.FileWriter(os.path.join(self._log_dir, 'test'))
 
             # Init variables
-            init = tf.global_variables_initializer()
-            sess.run(init, {is_training_pl:True})
+            if os.path.exists(model_filename):
+                self.log_string('Restoring model')
+                saver.restore(sess, model_filename)
+            else:
+                self.log_string('Initializing model')
+                sess.run(tf.global_variables_initializer(), {is_training_pl:True})
 
             ops = {'pointclouds_pl': pointclouds_pl,
                    'labels_pl': labels_pl,
@@ -185,7 +191,7 @@ class Trainer:
 
                 # Save the variables to disk.
                 if epoch % 10 == 0:
-                    save_path = saver.save(sess, os.path.join(self._log_dir, "model.ckpt"))
+                    save_path = saver.save(sess, model_filename)
                     self.log_string("Model saved in file: %s" % save_path)
 
 
