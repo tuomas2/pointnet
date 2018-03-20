@@ -2,6 +2,8 @@ import argparse
 import sys
 import os
 import re
+
+import h5py
 import numpy as np
 
 import tensorflow as tf
@@ -45,6 +47,15 @@ class Trainer:
         self._bn_decay_clip = 0.99
 
     def read_data(self, data_path):
+        """
+        Reads a bundle of .h5 files named as ply_data_all_*.h5 in data folder.
+
+        H5 file format:
+
+        .data: point cloud data (x, y, z, r, g, b, xn, yn, zn)
+        .label: point labels
+
+        """
         all_files = sorted([os.path.join(data_path, i) for i in os.listdir(data_path)
                             if re.match(r'ply_data_all_(\d+).h5', i)])
 
@@ -54,9 +65,12 @@ class Trainer:
         data_batch_list = []
         label_batch_list = []
         for h5_filename in all_files:
-            data_batch, label_batch = provider.load_h5(h5_filename)
+            f = h5py.File(h5_filename)
+            data_batch = f['data'][:]
+            label_batch = f['label'][:]
             data_batch_list.append(data_batch)
             label_batch_list.append(label_batch)
+
         data_batches = np.concatenate(data_batch_list, 0)
         label_batches = np.concatenate(label_batch_list, 0)
 
@@ -259,7 +273,7 @@ class Trainer:
 
 def start_debug():
     import pydevd
-    pydevd.settrace('localhost', port=12151, stdoutToServer=True, stderrToServer=True)
+    pydevd.settrace('localhost', port=12151, stdoutToServer=True, stderrToServer=True, suspend=False)
 
 
 def main():
@@ -276,9 +290,13 @@ def main():
     parser.add_argument('--decay_rate', type=float, default=0.5, help='Decay rate for lr decay [default: 0.5]')
     parser.add_argument('--test_area', type=int, default=6, help='Which area to use for test, option: 1-6 [default: 6]')
     parser.add_argument('--data_path', type=str, default='indoor3d_sem_seg_hdf5_data', help='Data path where .h5 files are found')
-    FLAGS = parser.parse_args()
+    parser.add_argument('--debug', type=bool, default=False, help='Enable remote debugging')
+    flags = parser.parse_args()
 
-    trainer = Trainer(**FLAGS.__dict__)
+    if flags.debug:
+        start_debug()
+
+    trainer = Trainer(**flags.__dict__)
 
     trainer.train()
     trainer.close()
