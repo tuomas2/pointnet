@@ -14,7 +14,7 @@ from pointnet.sem_seg.model import get_model, get_loss, placeholder_inputs
 class Trainer:
     def __init__(self, gpu=0, log_dir='log', num_point=4096, max_epoch=50, batch_size=24,
                  learning_rate=0.001, momentum=0.9, optimizer='adam',
-                 decay_step=300000, decay_rate=0.5, test_area=6,
+                 decay_step=300000, decay_rate=0.5, test_area=6, restore=False,
                  data_path='indoor3d_sem_seg_hdf5_data', **kwargs):
 
         self._batch_size = batch_size
@@ -27,6 +27,7 @@ class Trainer:
         self._decay_step = decay_step
         self._decay_rate = decay_rate
         self._test_area = test_area
+        self._restore = restore
 
         self._log_dir = log_dir
         if not os.path.exists(self._log_dir):
@@ -166,7 +167,7 @@ class Trainer:
             test_writer = tf.summary.FileWriter(os.path.join(self._log_dir, 'test'))
 
             # Init variables
-            if os.path.exists(model_filename):
+            if self._restore:
                 self.log_string('Restoring model')
                 saver.restore(sess, model_filename)
             else:
@@ -182,7 +183,7 @@ class Trainer:
                    'merged': merged,
                    'step': batch}
 
-            for epoch in range(self._max_epoch):
+            for epoch in range(self._max_epoch + 1):
                 self.log_string('**** EPOCH %03d ****' % (epoch))
                 sys.stdout.flush()
 
@@ -297,6 +298,7 @@ def main():
     parser.add_argument('--test_area', type=int, default=6, help='Which area to use for test, option: 1-6 [default: 6]')
     parser.add_argument('--data_path', type=str, default='indoor3d_sem_seg_hdf5_data', help='Data path where .h5 files are found')
     parser.add_argument('--debug', default=False, action='store_true', help='Enable remote debugging')
+    parser.add_argument('--restore', default=False, action='store_true', help='Restore saved model')
     flags = parser.parse_args()
 
     if flags.debug:
