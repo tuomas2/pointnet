@@ -186,9 +186,13 @@ class Trainer:
             for epoch in range(self._max_epoch + 1):
                 self.log_string('**** EPOCH %03d ****' % (epoch))
                 sys.stdout.flush()
-
-                self.train_one_epoch(sess, ops, train_writer)
-                self.eval_one_epoch(sess, ops, test_writer)
+                try:
+                    self.train_one_epoch(sess, ops, train_writer)
+                    self.eval_one_epoch(sess, ops, test_writer)
+                except KeyboardInterrupt:
+                    save_path = saver.save(sess, model_filename)
+                    self.log_string("Model saved in file: %s" % save_path)
+                    raise
 
                 # Save the variables to disk.
                 if epoch % 10 == 0:
