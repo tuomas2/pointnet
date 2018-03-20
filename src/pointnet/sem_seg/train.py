@@ -24,6 +24,7 @@ class Trainer:
         self._optimizer = optimizer
         self._decay_step = decay_step
         self._decay_rate = decay_rate
+        self._test_area = test_area
 
         self._log_dir = log_dir
         if not os.path.exists(self._log_dir):
@@ -31,6 +32,10 @@ class Trainer:
 
         self._log_fout = open(os.path.join(self._log_dir, 'log_train.txt'), 'w')
 
+        self.initialize_constants()
+        self.read_data(data_path)
+
+    def initialize_constants(self):
         #self._max_num_point = 4096
         self._num_classes = 13
         self._bn_init_decay = 0.5
@@ -39,6 +44,7 @@ class Trainer:
         self._bn_decay_decay_step = float(self._decay_step)
         self._bn_decay_clip = 0.99
 
+    def read_data(self, data_path):
         all_files = sorted([os.path.join(data_path, i) for i in os.listdir(data_path)
                             if re.match(r'ply_data_all_(\d+).h5', i)])
 
@@ -54,7 +60,7 @@ class Trainer:
         data_batches = np.concatenate(data_batch_list, 0)
         label_batches = np.concatenate(label_batch_list, 0)
 
-        test_area = f'Area_{test_area}'
+        test_area = f'Area_{self._test_area}'
         train_idxs = []
         test_idxs = []
         for i,room_name in enumerate(room_filelist):
@@ -67,7 +73,6 @@ class Trainer:
         self.train_label = label_batches[train_idxs]
         self.test_data = data_batches[test_idxs,...]
         self.test_label = label_batches[test_idxs]
-
 
     def log_string(self, out_str):
         self._log_fout.write(out_str + '\n')
