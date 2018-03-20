@@ -290,7 +290,7 @@ def main():
     parser.add_argument('--decay_rate', type=float, default=0.5, help='Decay rate for lr decay [default: 0.5]')
     parser.add_argument('--test_area', type=int, default=6, help='Which area to use for test, option: 1-6 [default: 6]')
     parser.add_argument('--data_path', type=str, default='indoor3d_sem_seg_hdf5_data', help='Data path where .h5 files are found')
-    parser.add_argument('--debug', type=bool, default=False, action='store_true', help='Enable remote debugging')
+    parser.add_argument('--debug', default=False, action='store_true', help='Enable remote debugging')
     flags = parser.parse_args()
 
     if flags.debug:
